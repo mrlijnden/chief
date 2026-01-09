@@ -1,29 +1,11 @@
 import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { basename, join } from "node:path";
-import { createInterface } from "node:readline";
 
-import {
-  ensureChiefDir,
-  getConfig,
-  getCurrentWorktree,
-  setConfig,
-} from "../lib/config";
+import { ensureChiefDir, getConfig, setConfig } from "../lib/config";
 import { getGitRoot, isGitRepo, removeWorktree } from "../lib/git";
-
-function prompt(question: string): Promise<string> {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      resolve(answer);
-    });
-  });
-}
+import { selectWorktree } from "../lib/prompts";
+import { prompt } from "../lib/terminal";
 
 export async function cleanCommand(args: string[]): Promise<void> {
   // Check if we're in a git repo
@@ -42,17 +24,19 @@ export async function cleanCommand(args: string[]): Promise<void> {
 
   if (args.length > 0) {
     // Use specified worktree
-    worktreeName = args[0];
+    worktreeName = args[0] as string;
     worktreePath = join(chiefDir, "worktrees", worktreeName);
   } else {
-    // Use current worktree
-    const current = await getCurrentWorktree(chiefDir);
-    if (!current) {
-      throw new Error(
-        "No current worktree. Specify a worktree name: chief clean <name>",
-      );
+    // Interactive selection
+    const selected = await selectWorktree(chiefDir, {
+      message: "Select a worktree to clean:",
+    });
+
+    if (!selected) {
+      return; // No worktrees exist, message already shown
     }
-    worktreePath = current;
+
+    worktreePath = selected;
     worktreeName = basename(worktreePath);
   }
 

@@ -1,5 +1,5 @@
+import { copyFileSync } from "node:fs";
 import { join } from "node:path";
-import { createInterface } from "node:readline";
 
 import { codeBlock } from "common-tags";
 
@@ -18,29 +18,7 @@ import {
 } from "../lib/git";
 import { generateHash } from "../lib/hash";
 import { writeTaskSchema } from "../lib/tasks";
-
-function promptMultiline(question: string): Promise<string> {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  console.log(question);
-  console.log("(Enter an empty line to finish)\n");
-
-  return new Promise((resolve) => {
-    const lines: string[] = [];
-
-    rl.on("line", (line) => {
-      if (line === "") {
-        rl.close();
-        resolve(lines.join("\n"));
-      } else {
-        lines.push(line);
-      }
-    });
-  });
-}
+import { promptMultiline } from "../lib/terminal";
 
 export async function newCommand(): Promise<void> {
   // Check if we're in a git repo
@@ -106,8 +84,12 @@ export async function newCommand(): Promise<void> {
   // Ensure .chief directory exists within the worktree for plan and tasks
   const worktreeChiefDir = await ensureWorktreeChiefDir(worktreePath);
   const planPath = join(worktreeChiefDir, "plan.md");
-  const tasksSchemaPath = join(chiefDir, "tasks.schema.json");
+  const mainTasksSchemaPath = join(chiefDir, "tasks.schema.json");
+  const worktreeTasksSchemaPath = join(worktreeChiefDir, "tasks.schema.json");
   const tasksPath = join(worktreeChiefDir, "tasks.json");
+
+  // Copy tasks schema to worktree so Claude can access it
+  copyFileSync(mainTasksSchemaPath, worktreeTasksSchemaPath);
 
   // Step 2: Run Claude in plan mode for the interactive planning session
   const planPrompt = codeBlock`
@@ -118,6 +100,7 @@ export async function newCommand(): Promise<void> {
     When you have formulated the plan, output it to ${planPath}.
 
     Important: you are NOT allowed to start executing the plan. Once the plan is created, you MUST exit the session.
+    If you're unable to exit the session, instruct the user to press Ctrl+C twice to exit the session and continue with the plan.
   `;
 
   console.log("\nStarting planning session with Claude...");
@@ -129,7 +112,7 @@ export async function newCommand(): Promise<void> {
   console.log("\nConverting plan to tasks...");
   await runPrint(
     codeBlock`
-      Read the plan from "${planPath}" and convert it into a series of tasks according to the JSON schema in "${tasksSchemaPath}".
+      Read the plan from "${planPath}" and convert it into a series of tasks according to the JSON schema in "${worktreeTasksSchemaPath}".
       Output the tasks to "${tasksPath}". Make sure each task has: category, description, passes (set to false), and steps array.
     `,
     { cwd: worktreePath, model: "sonnet" },
@@ -141,6 +124,6 @@ export async function newCommand(): Promise<void> {
   console.log("\n✓ Tasks created successfully!");
   console.log(`  Worktree: ${worktreePath}`);
   console.log("\nNext steps:");
-  console.log("  chief list    - View the tasks");
-  console.log("  chief run     - Start working on tasks");
+  console.log("  chief tasks list  - View the tasks");
+  console.log("  chief run         - Start working on tasks");
 }

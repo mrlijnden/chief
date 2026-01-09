@@ -1,6 +1,5 @@
 import { existsSync } from "node:fs";
 import { basename, join } from "node:path";
-import { createInterface } from "node:readline";
 
 import { codeBlock } from "common-tags";
 
@@ -13,29 +12,7 @@ import {
 } from "../lib/config";
 import { getGitRoot, isGitRepo, pushChanges } from "../lib/git";
 import { hasPendingTasks, readTasks } from "../lib/tasks";
-
-function promptMultiline(question: string): Promise<string> {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  console.log(question);
-  console.log("(Enter an empty line to finish)\n");
-
-  return new Promise((resolve) => {
-    const lines: string[] = [];
-
-    rl.on("line", (line) => {
-      if (line === "") {
-        rl.close();
-        resolve(lines.join("\n"));
-      } else {
-        lines.push(line);
-      }
-    });
-  });
-}
+import { promptMultiline } from "../lib/terminal";
 
 function buildPrompt(worktreePath: string, verificationSteps: string): string {
   const planPath = join(worktreePath, ".chief", "plan.md");
@@ -149,7 +126,7 @@ export async function runCommand(args: string[]): Promise<void> {
     console.log("\nCreating pull request...");
     await runPrint(
       "Create a pull request for this branch using the `gh pr create` command. Use a descriptive title and body based on the changes made.",
-      { cwd: worktreePath },
+      { cwd: worktreePath, model: "sonnet" },
     );
 
     console.log("\n✓ All done! Check the PR on GitHub.");

@@ -1,37 +1,41 @@
 #!/usr/bin/env bun
 
+import { codeBlock } from "common-tags";
+
 import { cleanCommand } from "./commands/clean";
-import { listCommand } from "./commands/list";
 import { newCommand } from "./commands/new";
 import { runCommand } from "./commands/run";
+import { tasksCommand } from "./commands/tasks";
 import { useCommand } from "./commands/use";
 import { worktreesCommand } from "./commands/worktrees";
 
-const HELP_TEXT = `
-chief - AI coding agent task runner
+const HELP_TEXT = codeBlock`
+  chief - AI coding agent task runner
 
-Usage:
-  chief <command> [options]
+  Usage:
+    chief <command> [options]
 
-Commands:
-  new                  Create a new worktree and start planning
-  list                 List tasks in the current worktree
-  run [--single]       Run tasks (loop until done, or once with --single)
-  worktrees            List all worktrees
-  use <name>           Switch to a different worktree
-  clean [name]         Delete a worktree
+  Commands:
+    new                  Create a new worktree and start planning
+    tasks list           List tasks in the current worktree
+    tasks create         Create tasks for the current worktree
+    run [--single]       Run tasks (loop until done, or once with --single)
+    worktrees            List all worktrees
+    use <name>           Switch to a different worktree
+    clean [name]         Delete a worktree
 
-Options:
-  --help, -h           Show this help message
+  Options:
+    --help, -h           Show this help message
 
-Examples:
-  chief new                  Start a new project (prompts for description)
-  chief list                 Show tasks for current worktree
-  chief run                  Run tasks in a loop
-  chief run --single         Run tasks once interactively
-  chief worktrees            List all worktrees
-  chief use my-feature-abc   Switch to worktree
-  chief clean                Clean up current worktree
+  Examples:
+    chief new                  Start a new project (prompts for description)
+    chief tasks list           Show tasks for current worktree
+    chief tasks create         Create tasks for existing worktree
+    chief run                  Run tasks in a loop
+    chief run --single         Run tasks once interactively
+    chief worktrees            List all worktrees
+    chief use my-feature-abc   Switch to worktree
+    chief clean                Clean up current worktree
 `;
 
 async function main(): Promise<void> {
@@ -51,8 +55,8 @@ async function main(): Promise<void> {
         await newCommand();
         break;
       }
-      case "list": {
-        await listCommand();
+      case "tasks": {
+        await tasksCommand(commandArgs);
         break;
       }
       case "run": {

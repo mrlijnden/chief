@@ -1,16 +1,11 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 import { ensureChiefDir, setCurrentWorktree } from "../lib/config";
 import { getGitRoot, isGitRepo } from "../lib/git";
+import { selectWorktree } from "../lib/prompts";
 
 export async function useCommand(args: string[]): Promise<void> {
-  if (args.length === 0) {
-    throw new Error("Please provide a worktree name: chief use <name>");
-  }
-
-  const worktreeName = args[0];
-
   // Check if we're in a git repo
   if (!(await isGitRepo())) {
     throw new Error(
@@ -21,13 +16,31 @@ export async function useCommand(args: string[]): Promise<void> {
   const gitRoot = await getGitRoot();
   const chiefDir = await ensureChiefDir(gitRoot);
 
-  // Check if worktree exists
-  const worktreePath = join(chiefDir, "worktrees", worktreeName);
+  let worktreePath: string;
+  let worktreeName: string;
 
-  if (!existsSync(worktreePath)) {
-    throw new Error(
-      `Worktree not found: ${worktreeName}\n\nRun \`chief worktrees\` to see available worktrees.`,
-    );
+  if (args.length === 0) {
+    // Interactive selection
+    const selected = await selectWorktree(chiefDir, {
+      message: "Select a worktree to switch to:",
+    });
+
+    if (!selected) {
+      return; // No worktrees exist, message already shown
+    }
+
+    worktreePath = selected;
+    worktreeName = basename(selected);
+  } else {
+    // Use provided argument
+    worktreeName = args[0] as string;
+    worktreePath = join(chiefDir, "worktrees", worktreeName);
+
+    if (!existsSync(worktreePath)) {
+      throw new Error(
+        `Worktree not found: ${worktreeName}\n\nRun \`chief worktrees\` to see available worktrees.`,
+      );
+    }
   }
 
   // Set as current worktree
@@ -35,5 +48,5 @@ export async function useCommand(args: string[]): Promise<void> {
 
   console.log(`\n✓ Switched to worktree: ${worktreeName}`);
   console.log(`  Path: ${worktreePath}`);
-  console.log("\nRun `chief list` to see tasks or `chief run` to start.");
+  console.log("\nRun `chief tasks list` to see tasks or `chief run` to start.");
 }
