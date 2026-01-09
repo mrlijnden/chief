@@ -5,9 +5,8 @@ export interface Task {
   steps: string[];
 }
 
-export interface ChiefConfig {
-  currentWorktree?: string;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- Reserved for future config options
+export interface ChiefConfig {}
 
 export interface WorktreeInfo {
   createdAt: Date;

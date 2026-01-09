@@ -4,31 +4,31 @@ import { basename, join } from "node:path";
 import { codeBlock } from "common-tags";
 
 import { runPrint } from "../lib/claude";
-import {
-  ensureChiefDir,
-  ensureWorktreeChiefDir,
-  getCurrentWorktree,
-} from "../lib/config";
+import { ensureChiefDir, ensureWorktreeChiefDir } from "../lib/config";
 import { getGitRoot, isGitRepo } from "../lib/git";
+import { selectWorktree } from "../lib/prompts";
 import { getTaskStats, readTasks } from "../lib/tasks";
 
 const TASKS_HELP = codeBlock`
-  chief tasks - Manage tasks in the current worktree
+  chief tasks - Manage tasks in a worktree
 
   Usage:
-    chief tasks <subcommand>
+    chief tasks <subcommand> [worktree-name]
 
   Subcommands:
-    list                 List tasks in the current worktree
-    create               Create tasks for the current worktree
+    list [name]          List tasks in a worktree
+    create [name]        Create tasks for a worktree
 
   Examples:
-    chief tasks list     Show tasks for current worktree
-    chief tasks create   Start planning and create tasks
+    chief tasks list              Interactive picker to select worktree
+    chief tasks list my-feature   Show tasks for 'my-feature' worktree
+    chief tasks create            Interactive picker to select worktree
+    chief tasks create my-feature Create tasks for 'my-feature' worktree
 `;
 
 export async function tasksCommand(args: string[]): Promise<void> {
   const subcommand = args[0];
+  const worktreeArg = args[1];
 
   if (!subcommand || subcommand === "--help" || subcommand === "-h") {
     console.log(TASKS_HELP);
@@ -37,11 +37,11 @@ export async function tasksCommand(args: string[]): Promise<void> {
 
   switch (subcommand) {
     case "list": {
-      await listSubcommand();
+      await listSubcommand(worktreeArg);
       break;
     }
     case "create": {
-      await createSubcommand();
+      await createSubcommand(worktreeArg);
       break;
     }
     default: {
@@ -53,7 +53,7 @@ export async function tasksCommand(args: string[]): Promise<void> {
   }
 }
 
-async function listSubcommand(): Promise<void> {
+async function listSubcommand(worktreeArg?: string): Promise<void> {
   // Check if we're in a git repo
   if (!(await isGitRepo())) {
     throw new Error(
@@ -64,31 +64,41 @@ async function listSubcommand(): Promise<void> {
   const gitRoot = await getGitRoot();
   const chiefDir = await ensureChiefDir(gitRoot);
 
-  // Get current worktree
-  const worktreePath = await getCurrentWorktree(chiefDir);
+  let worktreePath: string | null;
 
-  if (!worktreePath) {
-    throw new Error(
-      "No current worktree. Run `chief new <name>` or `chief use <name>` first.",
-    );
+  if (worktreeArg) {
+    // Validate worktree exists
+    worktreePath = join(chiefDir, "worktrees", worktreeArg);
+    if (!existsSync(worktreePath)) {
+      throw new Error(`Worktree not found: ${worktreeArg}`);
+    }
+  } else {
+    // Interactive picker
+    worktreePath = await selectWorktree(chiefDir, {
+      message: "Select a worktree to list tasks:",
+    });
+
+    if (!worktreePath) {
+      return;
+    }
   }
 
-  if (!existsSync(worktreePath)) {
-    throw new Error(`Worktree not found: ${worktreePath}`);
-  }
+  const worktreeName = basename(worktreePath);
 
   // Read tasks
   const tasks = await readTasks(worktreePath);
 
   if (tasks.length === 0) {
-    console.log(`\nNo tasks found in ${basename(worktreePath)}`);
-    console.log("Run `chief tasks create` to create tasks for this worktree.");
+    console.log(`\nNo tasks found in ${worktreeName}`);
+    console.log(
+      `Run \`chief tasks create ${worktreeName}\` to create tasks for this worktree.`,
+    );
     return;
   }
 
   const stats = getTaskStats(tasks);
 
-  console.log(`\nTasks for: ${basename(worktreePath)}`);
+  console.log(`\nTasks for: ${worktreeName}`);
   console.log(`Progress: ${stats.completed}/${stats.total} completed\n`);
   console.log("─".repeat(80));
 
@@ -120,13 +130,13 @@ async function listSubcommand(): Promise<void> {
   console.log(`\n${stats.total - stats.completed} tasks remaining`);
 
   if (stats.completed < stats.total) {
-    console.log("\nRun `chief run` to start working on tasks.");
+    console.log(`\nRun \`chief run ${worktreeName}\` to start working on tasks.`);
   } else {
     console.log("\nAll tasks completed! Run `chief clean` to clean up.");
   }
 }
 
-async function createSubcommand(): Promise<void> {
+async function createSubcommand(worktreeArg?: string): Promise<void> {
   // Check if we're in a git repo
   if (!(await isGitRepo())) {
     throw new Error(
@@ -137,18 +147,26 @@ async function createSubcommand(): Promise<void> {
   const gitRoot = await getGitRoot();
   const chiefDir = await ensureChiefDir(gitRoot);
 
-  // Get current worktree
-  const worktreePath = await getCurrentWorktree(chiefDir);
+  let worktreePath: string | null;
 
-  if (!worktreePath) {
-    throw new Error(
-      "No current worktree. Run `chief new` or `chief use <name>` first.",
-    );
+  if (worktreeArg) {
+    // Validate worktree exists
+    worktreePath = join(chiefDir, "worktrees", worktreeArg);
+    if (!existsSync(worktreePath)) {
+      throw new Error(`Worktree not found: ${worktreeArg}`);
+    }
+  } else {
+    // Interactive picker
+    worktreePath = await selectWorktree(chiefDir, {
+      message: "Select a worktree to create tasks:",
+    });
+
+    if (!worktreePath) {
+      return;
+    }
   }
 
-  if (!existsSync(worktreePath)) {
-    throw new Error(`Worktree not found: ${worktreePath}`);
-  }
+  const worktreeName = basename(worktreePath);
 
   // Ensure .chief directory exists within the worktree
   const worktreeChiefDir = await ensureWorktreeChiefDir(worktreePath);
@@ -183,6 +201,6 @@ async function createSubcommand(): Promise<void> {
   console.log("\n✓ Tasks created successfully!");
   console.log(`  Worktree: ${worktreePath}`);
   console.log("\nNext steps:");
-  console.log("  chief tasks list  - View the tasks");
-  console.log("  chief run         - Start working on tasks");
+  console.log(`  chief tasks list ${worktreeName}  - View the tasks`);
+  console.log(`  chief run ${worktreeName}         - Start working on tasks`);
 }
