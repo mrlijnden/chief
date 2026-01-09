@@ -5,10 +5,10 @@ import { join, basename } from "path";
 import { isGitRepo, getGitRoot, removeWorktree } from "../lib/git";
 import {
   ensureChiefDir,
-  getCurrentWorktree,
   getConfig,
   setConfig,
 } from "../lib/config";
+import { selectWorktree } from "../lib/prompts";
 
 function prompt(question: string): Promise<string> {
   const rl = createInterface({
@@ -44,14 +44,16 @@ export async function cleanCommand(args: string[]): Promise<void> {
     worktreeName = args[0];
     worktreePath = join(chiefDir, "worktrees", worktreeName);
   } else {
-    // Use current worktree
-    const current = await getCurrentWorktree(chiefDir);
-    if (!current) {
-      throw new Error(
-        "No current worktree. Specify a worktree name: chief clean <name>"
-      );
+    // Interactive selection
+    const selected = await selectWorktree(chiefDir, {
+      message: "Select a worktree to clean:",
+    });
+
+    if (!selected) {
+      return; // No worktrees exist, message already shown
     }
-    worktreePath = current;
+
+    worktreePath = selected;
     worktreeName = basename(worktreePath);
   }
 
