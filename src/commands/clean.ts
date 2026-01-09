@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { basename, join } from "node:path";
 
-import { ensureChiefDir, getConfig, setConfig } from "../lib/config";
+import { ensureChiefDir } from "../lib/config";
 import { getGitRoot, isGitRepo, removeWorktree } from "../lib/git";
 import { selectWorktree } from "../lib/prompts";
 import { prompt } from "../lib/terminal";
@@ -69,13 +69,6 @@ export async function cleanCommand(args: string[]): Promise<void> {
   // Remove directory if it still exists
   if (existsSync(worktreePath)) {
     await rm(worktreePath, { force: true, recursive: true });
-  }
-
-  // Update config if this was the current worktree
-  const config = await getConfig(chiefDir);
-  if (config.currentWorktree === worktreePath) {
-    config.currentWorktree = undefined;
-    await setConfig(chiefDir, config);
   }
 
   console.log(`\n✓ Worktree "${worktreeName}" cleaned up successfully.`);
