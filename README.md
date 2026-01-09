@@ -1,5 +1,7 @@
 # Chief
 
+<img src="./image.png" alt="Chief Wiggum" width="180" align="right" />
+
 CLI tool for running AI coding agents in a loop using the Ralph Wiggum methodology.
 
 Chief creates isolated git worktrees and uses Claude Code to plan and execute tasks autonomously, committing progress as it goes.
