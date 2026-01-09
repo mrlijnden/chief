@@ -13,7 +13,7 @@ export async function runPlanMode(
   prompt: string,
   options: ClaudeOptions = {}
 ): Promise<void> {
-  const args = ["--permission-mode", "plan"];
+  const args = ["--allowed-tools", "Edit, Write", "--permission-mode", "plan"];
 
   if (options.chrome) {
     args.push("--chrome");

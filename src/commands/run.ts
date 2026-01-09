@@ -161,7 +161,7 @@ export async function runCommand(args: string[]): Promise<void> {
     console.log("\nCreating pull request...");
     await runPrint(
       "Create a pull request for this branch using the `gh pr create` command. Use a descriptive title and body based on the changes made.",
-      { cwd: worktreePath }
+      { cwd: worktreePath, model: "sonnet" }
     );
 
     console.log("\n✓ All done! Check the PR on GitHub.");

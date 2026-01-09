@@ -116,6 +116,7 @@ export async function newCommand(_args: string[]): Promise<void> {
     When you have formulated the plan, output it to ${planPath}.
 
     Important: you are NOT allowed to start executing the plan. Once the plan is created, you MUST exit the session.
+    If you're unable to exit the session, instruct the user to press Ctrl+C twice to exit the session and continue with the plan.
   `;
 
   console.log("\nStarting planning session with Claude...");
