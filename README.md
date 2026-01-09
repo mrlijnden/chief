@@ -4,11 +4,18 @@ CLI tool for running AI coding agents in a loop using the Ralph Wiggum methodolo
 
 Chief creates isolated git worktrees and uses Claude Code to plan and execute tasks autonomously, committing progress as it goes.
 
+## Requirements
+
+- [Bun](https://bun.sh/) runtime
+- [Claude Code CLI](https://claude.ai/claude-code) installed and authenticated
+- [GitHub CLI](https://cli.github.com/) (`gh`) for PR creation
+- Git
+
 ## Installation
 
 ```bash
 # Clone the repository
-git clone <repo-url> chief
+git clone git@github.com:mauricekleine/chief.git chief
 cd chief
 
 # Install dependencies
@@ -17,13 +24,6 @@ bun install
 # Create an alias (add to your shell profile)
 alias chief="bun run /path/to/chief/src/index.ts"
 ```
-
-## Requirements
-
-- [Bun](https://bun.sh/) runtime
-- [Claude Code CLI](https://claude.ai/claude-code) installed and authenticated
-- [GitHub CLI](https://cli.github.com/) (`gh`) for PR creation
-- Git
 
 ## Usage
 
