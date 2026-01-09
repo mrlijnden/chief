@@ -64,7 +64,7 @@ export async function setConfig(
   config: ChiefConfig,
 ): Promise<void> {
   const configPath = join(chiefDir, CONFIG_FILE);
-  await writeFile(configPath, JSON.stringify(config, undefined, 2));
+  await writeFile(configPath, JSON.stringify(config, null, 2));
 }
 
 /**

@@ -34,6 +34,7 @@ export default defineConfig(
       ],
       "unicorn/prefer-top-level-await": "off",
       "unicorn/import-style": "off",
+      "unicorn/no-null": "off",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
         "warn",

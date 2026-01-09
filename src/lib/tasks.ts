@@ -79,5 +79,5 @@ export function getTaskSchema(): object {
  */
 export async function writeTaskSchema(chiefDir: string): Promise<void> {
   const schemaPath = join(chiefDir, "tasks.schema.json");
-  await writeFile(schemaPath, JSON.stringify(getTaskSchema(), undefined, 2));
+  await writeFile(schemaPath, JSON.stringify(getTaskSchema(), null, 2));
 }
