@@ -68,28 +68,6 @@ export async function setConfig(
 }
 
 /**
- * Get the current worktree path from config.
- */
-export async function getCurrentWorktree(
-  chiefDir: string,
-): Promise<string | undefined> {
-  const config = await getConfig(chiefDir);
-  return config.currentWorktree;
-}
-
-/**
- * Set the current worktree in config.
- */
-export async function setCurrentWorktree(
-  chiefDir: string,
-  worktreePath: string,
-): Promise<void> {
-  const config = await getConfig(chiefDir);
-  config.currentWorktree = worktreePath;
-  await setConfig(chiefDir, config);
-}
-
-/**
  * Get the verification steps from .chief/verification.txt.
  */
 export async function getVerificationSteps(
