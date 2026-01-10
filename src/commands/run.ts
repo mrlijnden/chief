@@ -120,9 +120,7 @@ export async function runCommand(args: string[]): Promise<void> {
         break;
       }
 
-      console.log(
-        `\n--- Task #${iteration + 1}: ${tasks.at(iteration)?.description} ---`,
-      );
+      console.log(`\n--- Iteration ${iteration + 1} ---`);
 
       const output = await runPrint(runPrompt, {
         chrome: true,
