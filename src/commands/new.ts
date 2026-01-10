@@ -113,7 +113,7 @@ export async function newCommand(): Promise<void> {
   console.log("\nStarting planning session with Claude...");
   console.log("(Exit the session when you're done planning)\n");
 
-  await runPlanMode(planPrompt, { cwd: worktreePath });
+  await runPlanMode(planPrompt, { chrome: true, cwd: worktreePath });
 
   // Step 3: Convert plan to tasks
   console.log("\nConverting plan to tasks...");
