@@ -32,24 +32,29 @@ alias chief="bun run /path/to/chief/src/index.ts"
 ### Create a new project
 
 ```bash
-chief new
+# Create and cd into new worktree
+cd $(chief new)
+
+# Or with a description
+cd $(chief new "build a REST API")
 ```
 
 This will:
 
-1. Prompt you to describe what you want to build
-2. Use Claude to create a git worktree with an appropriate name in `.chief/worktrees/`
+1. Prompt you to describe what you want to build (or use the provided description)
+2. Use Claude to create a git worktree with an appropriate name in `~/.chief/{project-name}/worktrees/`
 3. Start an interactive planning session with Claude
 4. Generate a `plan.md` with the implementation plan
 5. Convert the plan into `tasks.json` with structured tasks
+6. Output the worktree path for `cd` integration
 
 ### List tasks
 
 ```bash
-# Interactive worktree selection
+# Auto-detects worktree when run from within one
 chief tasks list
 
-# Specify worktree by name
+# Or specify worktree by name (from main repo)
 chief tasks list <worktree-name>
 ```
 
@@ -58,10 +63,10 @@ Shows all tasks for the selected worktree with their completion status.
 ### Create tasks
 
 ```bash
-# Interactive worktree selection
+# Auto-detects worktree when run from within one
 chief tasks create
 
-# Specify worktree by name
+# Or specify worktree by name (from main repo)
 chief tasks create <worktree-name>
 ```
 
@@ -70,14 +75,14 @@ Creates tasks from an existing `plan.md` file in the selected worktree.
 ### Run tasks
 
 ```bash
-# Interactive worktree selection, loop mode (autonomous)
+# Auto-detects worktree when run from within one
 chief run
 
-# Specify worktree by name
+# Or specify worktree by name (from main repo)
 chief run <worktree-name>
 
 # Run once interactively
-chief run <worktree-name> --single
+chief run --single
 ```
 
 In loop mode, Chief will:
@@ -92,20 +97,31 @@ In loop mode, Chief will:
 ### Manage worktrees
 
 ```bash
-# List all worktrees
+# List all worktrees for current project
 chief worktrees
 
-# Delete a worktree
-chief clean [worktree-name]
+# Delete a worktree (auto-detects or prompts)
+chief clean
+
+# Or specify worktree by name
+chief clean <worktree-name>
+
+# Get path to worktree (for cd integration)
+cd $(chief cd)
 ```
 
 ## Configuration
 
-Chief stores its configuration in `.chief/` at your repository root:
+Chief uses two configuration locations:
+
+### Local config (`.chief/` in repository root)
 
 - `tasks.schema.json` - JSON schema for tasks
 - `verification.txt` - Verification steps template (copied to each worktree)
-- `worktrees/` - Git worktrees for each project
+
+### Global worktrees (`~/.chief/{project-name}/`)
+
+- `worktrees/` - Git worktrees for each project, stored globally to enable auto-detection
 
 Each worktree has its own `.chief/` directory containing:
 
