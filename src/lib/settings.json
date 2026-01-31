@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(find:*)",
+      "Bash(gh:*)",
+      "Bash(git:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm:*)",
+      "Bash(pwd:*)",
+      "Bash(sort:*)",
+      "Bash(tail:*)",
+      "Bash(tree:*)",
+      "Bash(touch:*)",
+      "Bash(wc:*)",
+      "Bash(xargs:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Bash(tsc:*)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Skill(impeccable:*)",
+      "Skill(vercel-react-best-practices)",
+      "WebFetch(domain:claude.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:x.com)",
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__plugin_context7_context7__resolve-library-id"
+    ],
+    "deny": []
+  },
+  "defaultMode": "acceptEdits"
+}

@@ -3,6 +3,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const VERIFICATION_FILE = "verification.txt";
+const CLAUDE_DIR = ".claude";
+const SETTINGS_FILE = "settings.json";
 
 /**
  * Ensure the .chief directory exists.
@@ -62,4 +64,42 @@ export async function setVerificationSteps(
 ): Promise<void> {
   const verificationPath = join(chiefDir, VERIFICATION_FILE);
   await writeFile(verificationPath, steps);
+}
+
+/**
+ * Ensure the .claude directory exists in the project root.
+ * Claude Code reads settings.json from .claude/ automatically.
+ */
+export async function ensureClaudeDir(gitRoot: string): Promise<string> {
+  const claudeDir = join(gitRoot, CLAUDE_DIR);
+  if (!existsSync(claudeDir)) {
+    await mkdir(claudeDir, { recursive: true });
+  }
+  return claudeDir;
+}
+
+/**
+ * Ensure .claude/settings.json exists with default permissions.
+ * Claude Code automatically reads this file from the project root.
+ */
+export async function ensureSettings(gitRoot: string): Promise<void> {
+  const claudeDir = await ensureClaudeDir(gitRoot);
+  const settingsPath = join(claudeDir, SETTINGS_FILE);
+
+  // If settings.json already exists, don't overwrite it
+  if (existsSync(settingsPath)) {
+    return;
+  }
+
+  // Get the directory of this file (config.ts) to find default settings
+  // Bun supports import.meta.dir
+  const libDir =
+    import.meta.dir ??
+    import.meta.path.slice(0, import.meta.path.lastIndexOf("/"));
+  const defaultSettingsPath = join(libDir, "settings.json");
+
+  if (existsSync(defaultSettingsPath)) {
+    const defaultContent = await readFile(defaultSettingsPath, "utf8");
+    await writeFile(settingsPath, defaultContent);
+  }
 }

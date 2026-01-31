@@ -87,7 +87,9 @@ Chief uses a local `.chief/` directory in your repository:
 - `.chief/tasks/` - Tasks (`YYYY-MM-DD-<feature-name>.tasks.json`)
 - `.chief/verification.txt` - Verification steps
 
-Git-ignoring `.chief/` is optional.
+Chief also creates `.claude/settings.json` in your project root for Claude Code permissions configuration (auto-generated from defaults if not present).
+
+Git-ignoring `.chief/` is optional. `.claude/settings.json` can be committed to share permissions with your team.
 
 ### Verification Steps
 
@@ -100,6 +102,37 @@ Example:
 - bun run typecheck
 - bun run test
 ```
+
+### Permissions Configuration
+
+Chief automatically configures Claude Code permissions by creating `.claude/settings.json` in your project root. This file follows [Claude Code's settings format](https://code.claude.com/docs/en/settings) and includes permissions for necessary commands like `bun`, `npm`, `git`, `eslint`, etc.
+
+On first run, Chief creates `.claude/settings.json` with default permissions. You can customize this file to add or remove permissions as needed. The file structure follows Claude Code's format:
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun:*)",
+      "Bash(npm:*)",
+      "Bash(git:*)",
+      "Bash(eslint:*)",
+      ...
+    ],
+    "deny": []
+  },
+  "defaultMode": "acceptEdits"
+}
+```
+
+**Important notes:**
+
+- Claude Code automatically reads `.claude/settings.json` from your project root - no CLI flags needed
+- Make sure your permissions include all commands used in your verification steps
+- For example, if you use `bun run lint`, ensure `Bash(bun:*)` is included
+- If you use `npm run lint`, ensure `Bash(npm:*)` is included
+- You can commit `.claude/settings.json` to share permissions with your team
+- For personal overrides, use `.claude/settings.local.json` (gitignored)
 
 ## Task Schema
 

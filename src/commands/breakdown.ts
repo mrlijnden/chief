@@ -9,7 +9,12 @@ import {
   resolvePlanFileName,
 } from "../lib/chief-files";
 import { runPrint } from "../lib/claude";
-import { ensureChiefDir, ensurePlansDir, ensureTasksDir } from "../lib/config";
+import {
+  ensureChiefDir,
+  ensurePlansDir,
+  ensureSettings,
+  ensureTasksDir,
+} from "../lib/config";
 import { getGitRoot, isGitRepo } from "../lib/git";
 import tasksSchema from "../lib/tasks.schema.json" assert { type: "json" };
 import { selectPlanFile } from "../lib/terminal";
@@ -25,6 +30,9 @@ export async function breakdownCommand(featureName?: string): Promise<void> {
   const chiefDir = await ensureChiefDir(gitRoot);
   const plansDir = await ensurePlansDir(chiefDir);
   const tasksDir = await ensureTasksDir(chiefDir);
+
+  // Ensure .claude/settings.json exists with permissions
+  await ensureSettings(gitRoot);
 
   const featureArg = featureName?.trim();
   let planFileName: string | null;

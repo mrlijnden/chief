@@ -2,6 +2,7 @@ import { codeBlock } from "common-tags";
 
 import { formatDate } from "../lib/chief-files";
 import { runPlanMode } from "../lib/claude";
+import { ensureSettings } from "../lib/config";
 import { getGitRoot, isGitRepo } from "../lib/git";
 import { promptMultiline } from "../lib/terminal";
 
@@ -15,6 +16,9 @@ export async function planCommand(
   }
 
   const gitRoot = await getGitRoot();
+
+  // Ensure .claude/settings.json exists with permissions
+  await ensureSettings(gitRoot);
 
   const cliPrompt = descriptionParts.join(" ").trim();
   const description = await promptMultiline(
@@ -45,5 +49,8 @@ export async function planCommand(
   console.error("\nStarting planning session with Claude...");
   console.error("(Exit the session when you're done planning)\n");
 
-  await runPlanMode(planPrompt, { chrome: true, cwd: gitRoot });
+  await runPlanMode(planPrompt, {
+    chrome: true,
+    cwd: gitRoot,
+  });
 }

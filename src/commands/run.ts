@@ -13,7 +13,9 @@ import {
 import { runInteractive, runPrint } from "../lib/claude";
 import {
   ensureChiefDir,
+  ensureClaudeDir,
   ensurePlansDir,
+  ensureSettings,
   ensureTasksDir,
   getVerificationSteps,
   setVerificationSteps,
@@ -194,6 +196,9 @@ export async function runCommand(options: RunOptions): Promise<void> {
   const plansDir = await ensurePlansDir(chiefDir);
   const tasksDir = await ensureTasksDir(chiefDir);
 
+  // Ensure .claude/settings.json exists with permissions
+  await ensureSettings(gitRoot);
+
   let taskFileName: string | null;
 
   if (featureArg) {
@@ -242,7 +247,10 @@ export async function runCommand(options: RunOptions): Promise<void> {
     console.log(`\nRunning single task: ${baseName}`);
     console.log("(Interactive mode - exit when done)\n");
 
-    await runInteractive(runPrompt, { chrome: true, cwd: gitRoot });
+    await runInteractive(runPrompt, {
+      chrome: true,
+      cwd: gitRoot,
+    });
 
     console.log("\n✓ Single run completed.");
     return;

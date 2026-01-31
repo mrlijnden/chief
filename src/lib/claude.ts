@@ -8,6 +8,7 @@ export interface ClaudeOptions {
 
 /**
  * Run Claude in plan mode (interactive).
+ * Claude Code automatically reads .claude/settings.json from the cwd.
  */
 export async function runPlanMode(
   prompt: string,
@@ -33,6 +34,7 @@ export async function runPlanMode(
 
 /**
  * Run Claude in print mode (non-interactive).
+ * Claude Code automatically reads .claude/settings.json from the cwd.
  */
 export async function runPrint(
   prompt: string,
@@ -60,6 +62,7 @@ export async function runPrint(
 
 /**
  * Run Claude with acceptEdits permission in interactive mode.
+ * Claude Code automatically reads .claude/settings.json from the cwd.
  */
 export async function runInteractive(
   prompt: string,
